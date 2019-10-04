@@ -1,0 +1,141 @@
+<html>
+  <head>
+    <title></title>
+    <script src="../src/keyman.js"></script>
+    <link href='https://fonts.googleapis.com/css?family=Lobster+Two' rel='stylesheet' type='text/css'>
+    <link href='https://fonts.googleapis.com/css?family=Rubik' rel='stylesheet' type='text/css'>
+    <meta name="viewport" content="width=device-width">
+    <style>
+    #container {
+      max-width: 680px;
+      width: 88%;
+      margin: auto;
+      font-family: Rubik;
+    }
+    #browser-support-error {
+      color: #ef7a55;
+    }
+    .title {
+      font-family: 'Lobster Two' ;
+      text-align: center;
+      font-size: 48px;
+    }
+    .first-contact {
+      color: #aaa;
+      font-size: 1.4em;
+      margin-top: .4em;
+    }
+    .row {
+      padding: .6em;
+      border-bottom: 1px solid #eee;
+    }
+    .key {
+      padding: .3em .4em .5em;
+      color: #555;
+      font-family: monospace;
+      display: inline-block;
+      margin: .2em;
+      line-height: 1em;
+      vertical-align: top;
+      min-width: 16px;
+      text-align: center;
+      text-shadow: 0 0 1px rgba(0,0,0,.4);
+      position: relative;
+      background: #eee;
+      box-shadow: 0 4px 0 #bbb,0 4px 2px 0px rgba(0,0,0,0.6);
+      top: 0;
+      transition: all .2s;
+      padding: .6em;
+      margin-bottom: .8em;
+      margin-right: .8em;
+      border-radius: .3em;
+      border: 0;
+      outline: none;
+    }
+    #keyman-sample {
+      display: block;
+      width: 100%;
+      border: 1px solid #eee;
+      padding: 6px;
+      font-size: 1.1em;
+      outline: none;
+    }
+    </style>
+
+  </head>
+  <body>
+
+    <div id="container">
+      <h1 class="title">KeyMan</h1>
+
+      <div id="browser-support-error" style="display: none;">
+      This browser does not support both of KeyboardEvent.code and KeyboardEvent.key. Some key combinations with modifier can not be detected.
+      </div>
+      <input id="keyman-sample" />
+      <div id="preview"><span class="first-contact">Waiting your input...</span></div>
+    </div>
+
+    <script>
+
+    var input = document.getElementById('keyman-sample');
+
+    var Mapper = new KeyMan({debug: true});
+
+    window.onload = function(){
+      input.focus();
+    }
+
+    Mapper.map([['meta', 'ctrl'], 's'], function(){
+      alert('You wanna save something?');
+    });
+
+    Mapper.map([['meta', 'ctrl'], 'a'], function(){
+      alert('You wanna select all?');
+    });
+
+    if(!Mapper.is_supported()){
+      document.getElementById('browser-support-error').style.display = 'block';
+    }
+
+    // If you want ACTUALLY pushed key combinations,
+    //   Use keydown event.
+    // iOS(2016/04/19) can not send Shift key modifier and others.
+    // If you need to detect Shift + ALPHA key combinations,
+    //   Use keypress event.
+    // Some browsers will return incorrect keyCode value.
+    // (I believe keyCode should be a 'KEY' code. Not a sent character code.)
+    input.onkeydown = function(e){
+      e.preventDefault();
+
+      console.log(e);
+
+      Mapper.map(e)(['shift', 'space'], function(){
+        alert('S-Space');
+      });
+
+      console.log(String.fromCharCode(e.which));
+
+      Mapper.listen(e)(function(p){
+        console.log('Pushed: ', p);
+        var UI_preview, UI_combo, UI_key, UI_key_text;
+        UI_preview = document.getElementById('preview');
+        UI_preview.innerHTML = '';
+        p.map(function(keys){
+          UI_combo = document.createElement('DIV');
+          UI_combo.className = 'row';
+          keys.map(function(key){
+            UI_key = document.createElement('SPAN');
+            UI_key.className = 'key';
+            UI_key_text = document.createTextNode(key);
+            UI_key.appendChild(UI_key_text);
+            UI_combo.appendChild(UI_key);
+          });
+
+          UI_preview.appendChild(UI_combo);
+        });
+      });
+
+    }
+    </script>
+  </body>
+</html>
